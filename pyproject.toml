@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "soul-legacy"
+version = "0.1.0"
+description = "Digital estate vault — local-first, encrypted, LLM-queryable"
+readme = "README.md"
+license = { text = "BSL-1.1" }
+authors = [{ name = "Prahlad Menon", email = "menon.prahlad@gmail.com" }]
+keywords = ["estate", "vault", "encryption", "legacy", "soul"]
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.0",
+    "rich>=13.0",
+    "pydantic>=2.0",
+    "cryptography>=41.0",
+    "requests>=2.28",
+    "soul-agent>=0.1.5",
+    "gitpython>=3.1",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+blockchain = ["web3>=6.0"]
+dev        = ["pytest", "black", "mypy"]
+
+[project.scripts]
+soul-legacy = "soul_legacy.cli:main"
+
+[project.urls]
+Homepage   = "https://github.com/menonpg/soul-legacy"
+Repository = "https://github.com/menonpg/soul-legacy"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["soul_legacy*"]
