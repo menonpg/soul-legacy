@@ -15,5 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN pip install --no-cache-dir .
 
-# Run the server
-CMD ["soul-legacy", "serve", "--host", "0.0.0.0", "--port", "8080", "--cloud"]
+# Expose port
+EXPOSE 8080
+
+# Run the server - use shell form to expand $PORT
+CMD soul-legacy serve --host 0.0.0.0 --port ${PORT:-8080} --cloud
