@@ -228,3 +228,29 @@ def anchor_vault_updated(vault) -> Optional[dict]:
         return client.update_hash(vault)
     except Exception as e:
         return {"error": str(e)}
+
+
+# ── Auto-detect: local or chain ───────────────────────────────────────────────
+
+def get_anchor(vault):
+    """
+    Returns LocalAnchor if no Polygon wallet configured,
+    VaultAnchorClient if fully configured.
+    Swap is seamless — identical API either way.
+    """
+    cfg = _load_config()
+    if cfg.get("private_key") and cfg.get("contract_addr"):
+        return VaultAnchorClient(cfg)
+    else:
+        from .local_anchor import LocalAnchor
+        return LocalAnchor(vault)
+
+
+def anchor_checkin(vault) -> dict:
+    return get_anchor(vault).checkin(vault)
+
+def anchor_release(vault) -> dict:
+    return get_anchor(vault).trigger_release()
+
+def anchor_vault_updated(vault) -> dict:
+    return get_anchor(vault).update_hash(vault)
