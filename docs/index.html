@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soul Legacy — ThinkCreate.AI</title>
+<meta name="description" content="Your digital estate vault. Local-first, encrypted, AI-powered. Store everything that matters. Make it accessible to those who need it.">
+<style>
+  :root {
+    --bg:      #0a0a0f;
+    --bg2:     #12121a;
+    --bg3:     #1a1a26;
+    --border:  #2a2a3a;
+    --accent:  #7c6ef0;
+    --accent2: #a78bfa;
+    --gold:    #f0c060;
+    --fg:      #e8e8f0;
+    --muted:   #888899;
+    --green:   #4ade80;
+    --red:     #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; }
+
+  /* Nav */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 12px; }
+  .nav-logo { font-size: 1.5rem; }
+  .nav-name { font-weight: 700; font-size: 1rem; color: var(--fg); }
+  .nav-sub  { font-size: 0.72rem; color: var(--muted); }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color .15s; }
+  .nav-links a:hover { color: var(--fg); }
+  .nav-cta {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 9px 20px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; transition: opacity .15s;
+  }
+  .nav-cta:hover { opacity: .85; }
+
+  /* Hero */
+  .hero {
+    text-align: center; padding: 100px 24px 80px;
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, #7c6ef015, transparent);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 16px; font-size: 0.78rem; color: var(--accent2); margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 800; line-height: 1.15;
+    margin-bottom: 20px; letter-spacing: -0.02em;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent2), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem; color: var(--muted); max-width: 580px;
+    margin: 0 auto 40px; line-height: 1.7;
+  }
+  .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    padding: 14px 28px; font-size: 1rem; font-weight: 700; cursor: pointer;
+    text-decoration: none; transition: transform .15s, opacity .15s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); opacity: .9; }
+  .btn-secondary {
+    background: transparent; color: var(--fg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 28px; font-size: 1rem; font-weight: 600;
+    cursor: pointer; text-decoration: none; transition: border-color .15s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  /* Terminal demo */
+  .terminal-wrap { max-width: 680px; margin: 64px auto 0; padding: 0 24px; }
+  .terminal {
+    background: #0d0d14; border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,.5);
+  }
+  .terminal-bar {
+    background: var(--bg3); padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .terminal-title { margin-left: 8px; font-size: 0.78rem; color: var(--muted); }
+  .terminal-body { padding: 24px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+  .terminal-body .prompt { color: var(--accent2); }
+  .terminal-body .cmd    { color: var(--fg); }
+  .terminal-body .out    { color: var(--muted); }
+  .terminal-body .ok     { color: var(--green); }
+  .terminal-body .label  { color: var(--gold); }
+  .terminal-body .line   { margin-bottom: 6px; }
+
+  /* Sections */
+  section { padding: 80px 24px; }
+  .section-inner { max-width: 1080px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--accent2); font-weight: 600; margin-bottom: 12px;
+  }
+  .section-title { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800;
+    margin-bottom: 16px; letter-spacing: -0.01em; }
+  .section-sub { font-size: 1rem; color: var(--muted); max-width: 540px; line-height: 1.7; }
+
+  /* What it stores */
+  .stores-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px; margin-top: 40px;
+  }
+  .store-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px;
+  }
+  .store-card .icon { font-size: 1.5rem; margin-bottom: 10px; }
+  .store-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+  .store-card p  { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+  /* How it works */
+  .steps { display: flex; flex-direction: column; gap: 0; margin-top: 48px; }
+  .step {
+    display: flex; gap: 24px; align-items: flex-start;
+    padding: 28px 0; border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--bg3);
+    border: 1px solid var(--accent); color: var(--accent2);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 2px;
+  }
+  .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+  .step p  { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+  /* Security */
+  .security-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; margin-top: 40px;
+  }
+  .sec-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 24px;
+  }
+  .sec-card .sec-icon { font-size: 1.6rem; margin-bottom: 12px; }
+  .sec-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; }
+  .sec-card p  { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  /* Pricing */
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px; margin-top: 48px; align-items: start;
+  }
+  .price-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px; position: relative;
+  }
+  .price-card.featured {
+    border-color: var(--accent); background: linear-gradient(135deg, var(--bg2), #7c6ef010);
+  }
+  .featured-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff; font-size: 0.72rem; font-weight: 700;
+    padding: 4px 14px; border-radius: 20px; white-space: nowrap;
+  }
+  .price-name  { font-size: 0.8rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+  .price-amt   { font-size: 2.4rem; font-weight: 800; margin-bottom: 4px; }
+  .price-per   { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; }
+  .price-desc  { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .price-features li { font-size: 0.85rem; display: flex; gap: 8px; }
+  .price-features li::before { content: "✓"; color: var(--green); font-weight: 700; }
+  .price-btn {
+    width: 100%; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; border: none; text-align: center; text-decoration: none; display: block;
+  }
+  .price-btn.primary { background: var(--accent); color: #fff; }
+  .price-btn.secondary { background: var(--bg3); color: var(--fg); border: 1px solid var(--border); }
+
+  /* CTA */
+  .cta-section {
+    text-align: center; padding: 80px 24px;
+    background: linear-gradient(135deg, var(--bg2), var(--bg));
+    border-top: 1px solid var(--border);
+  }
+  .cta-section h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800;
+    margin-bottom: 16px; }
+  .cta-section p { color: var(--muted); margin-bottom: 36px; font-size: 1rem; }
+
+  /* Footer */
+  footer {
+    padding: 32px 48px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  footer .brand { font-weight: 700; font-size: 0.9rem; }
+  footer .copy  { font-size: 0.8rem; color: var(--muted); }
+  footer a { color: var(--muted); text-decoration: none; font-size: 0.8rem; }
+  footer a:hover { color: var(--fg); }
+
+  /* Waitlist form */
+  .waitlist-form { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .waitlist-form input {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 18px; color: var(--fg); font-size: 0.9rem; width: 280px; outline: none;
+  }
+  .waitlist-form input:focus { border-color: var(--accent); }
+  .waitlist-form input::placeholder { color: var(--muted); }
+
+  .divider { border: none; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-brand">
+    <span class="nav-logo">🏛️</span>
+    <div>
+      <div class="nav-name">Soul Legacy</div>
+      <div class="nav-sub">by ThinkCreate.AI</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#security">Security</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#waitlist" class="nav-cta">Join Waitlist</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">
+    <span>🔐</span> Zero-knowledge encryption · Local-first · AI-powered
+  </div>
+  <h1>Your life, documented.<br><span>Your wishes, honored.</span></h1>
+  <p class="hero-sub">
+    Soul Legacy is a secure digital estate vault — store your assets, insurance, 
+    legal documents, and final wishes in one encrypted, AI-queryable place. 
+    Give your family clarity when it matters most.
+  </p>
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-primary">Join the Waitlist</a>
+    <a href="https://github.com/menonpg/soul-legacy" class="btn-secondary">View Docs</a>
+  </div>
+
+  <!-- Terminal demo -->
+  <div class="terminal-wrap">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span class="terminal-title">soul-legacy — terminal</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line"><span class="prompt">$ </span><span class="cmd">soul-legacy init</span></div>
+        <div class="line out">🏛️  Soul Legacy — Digital Estate Vault</div>
+        <div class="line out">📁 Vault location: ~/.soul-legacy/vault</div>
+        <div class="line out">👤 Your name: <span style="color:#e8e8f0">Prahlad Menon</span></div>
+        <div class="line out">🔑 Passphrase: ••••••••••••</div>
+        <div class="line ok">✅ Vault created. Encrypted with AES-256.</div>
+        <br>
+        <div class="line"><span class="prompt">$ </span><span class="cmd">soul-legacy ingest will.pdf</span></div>
+        <div class="line out">📖 Extracting text... [pdfplumber, 4,821 chars]</div>
+        <div class="line out">🏷️  Auto-detected section: legal</div>
+        <div class="line out">✂️  Chunked into 12 pieces</div>
+        <div class="line out">🔢 Embedding... [384-dim]</div>
+        <div class="line ok">✅ Indexed → legal/a3f9c2</div>
+        <br>
+        <div class="line"><span class="prompt">$ </span><span class="cmd">soul-legacy chat</span></div>
+        <div class="line out"><span class="label">You:</span> What does my will say about the lake house?</div>
+        <div class="line out"><span class="label">Advisor:</span> Per <em>will.pdf (page 3)</em>, the lake house</div>
+        <div class="line out">&nbsp;&nbsp;&nbsp;at 142 Lakeview Dr is bequeathed to Sarah Menon,</div>
+        <div class="line out">&nbsp;&nbsp;&nbsp;contingent on settling the mortgage balance first.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What it stores -->
+<section style="background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">What You Can Store</div>
+    <h2 class="section-title">Everything that matters, in one place</h2>
+    <p class="section-sub">Eight structured sections cover your complete estate picture.</p>
+    <div class="stores-grid">
+      <div class="store-card"><div class="icon">🏦</div><h3>Assets</h3><p>Bank accounts, brokerage, real estate, vehicles, crypto, business interests</p></div>
+      <div class="store-card"><div class="icon">🛡️</div><h3>Insurance</h3><p>Life, health, property, auto, umbrella — policies, coverage, beneficiaries</p></div>
+      <div class="store-card"><div class="icon">⚖️</div><h3>Legal Documents</h3><p>Will, trust, power of attorney, healthcare directive — with document ingestion</p></div>
+      <div class="store-card"><div class="icon">💳</div><h3>Debts</h3><p>Mortgage, loans, credit cards — balances, rates, payoff dates</p></div>
+      <div class="store-card"><div class="icon">👥</div><h3>Contacts</h3><p>Attorney, accountant, executor, trustee, financial advisor, doctors</p></div>
+      <div class="store-card"><div class="icon">🎁</div><h3>Beneficiaries</h3><p>Who gets what — relationships, share percentages, specific bequests</p></div>
+      <div class="store-card"><div class="icon">💻</div><h3>Digital Assets</h3><p>Email, social media, crypto wallets, subscriptions — with instructions</p></div>
+      <div class="store-card"><div class="icon">💌</div><h3>Final Wishes</h3><p>Funeral preferences, medical directives, personal messages to loved ones</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how">
+  <div class="section-inner">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Simple. Private. Intelligent.</h2>
+    <p class="section-sub">One command to get started. AI that understands your documents. Controlled access for those who need it.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Create your vault</h3>
+          <p>Run <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:.85em">soul-legacy init</code> or sign up for managed hosting. A guided wizard walks you through setup. Your vault is encrypted locally before anything is stored.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Add records and ingest documents</h3>
+          <p>Add structured records (assets, insurance, contacts) or upload documents directly. PDFs, scanned images, and Word docs are automatically extracted, chunked, and indexed for AI retrieval.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Ask questions in plain English</h3>
+          <p>Chat with your estate data. Soul Legacy retrieves relevant document excerpts and structured records, then answers with citations — "per your will.pdf, page 3..."</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Grant controlled access to those who need it</h3>
+          <p>Give your attorney access to only legal documents. Give your accountant access to assets and debts. When the time comes, your executor gets a guided, AI-assisted walkthrough of your complete estate.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Security -->
+<section id="security" style="background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">Security</div>
+    <h2 class="section-title">Zero-knowledge. Always.</h2>
+    <p class="section-sub">We can't read your data. Not because we choose not to — because it's mathematically impossible without your passphrase.</p>
+    <div class="security-grid">
+      <div class="sec-card"><div class="sec-icon">🔐</div><h3>AES encryption</h3><p>All data encrypted with AES-128-CBC + HMAC-SHA256. Key derived via PBKDF2-SHA256 with 600,000 iterations — OWASP 2023 standard.</p></div>
+      <div class="sec-card"><div class="sec-icon">🏠</div><h3>Local-first</h3><p>Free tier stores everything on your device. No data leaves unless you choose cloud backup. Your key never does.</p></div>
+      <div class="sec-card"><div class="sec-icon">🔗</div><h3>Blockchain anchoring</h3><p>Vault fingerprint committed to Polygon — proves your documents haven't been tampered with since signing.</p></div>
+      <div class="sec-card"><div class="sec-icon">📖</div><h3>Open core</h3><p>Encryption layer is open source. Audit it yourself. No trust required — verify the math.</p></div>
+      <div class="sec-card"><div class="sec-icon">🗝️</div><h3>Partial access keys</h3><p>Scoped keys let you grant access to specific sections only. Your attorney sees legal docs. Your accountant sees financials. Nothing more.</p></div>
+      <div class="sec-card"><div class="sec-icon">⏰</div><h3>Dead man's switch</h3><p>Configurable check-in interval. If you don't check in, encrypted access instructions are sent to your designated contacts.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing">
+  <div class="section-inner">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Your terms. Your data.</h2>
+    <p class="section-sub">Local-first means free forever for self-hosted users. Pay only for managed services.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Local</div>
+        <div class="price-amt">$0</div>
+        <div class="price-per">forever</div>
+        <div class="price-desc">Full CLI on your device. You manage everything.</div>
+        <ul class="price-features">
+          <li>Unlimited records & documents</li>
+          <li>Full encryption, local only</li>
+          <li>GitHub backup (private repo)</li>
+          <li>AI chat (bring your own API key)</li>
+          <li>Community support</li>
+        </ul>
+        <a href="#waitlist" class="price-btn secondary">Get CLI Access</a>
+      </div>
+      <div class="price-card featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="price-name">Managed</div>
+        <div class="price-amt">$15</div>
+        <div class="price-per">per month</div>
+        <div class="price-desc">Managed vault, web UI, and automated safeguards.</div>
+        <ul class="price-features">
+          <li>Everything in Local</li>
+          <li>Managed encrypted vault</li>
+          <li>Web UI + mobile access</li>
+          <li>Dead man's switch</li>
+          <li>Blockchain anchoring</li>
+          <li>AI chat included</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#waitlist" class="price-btn primary">Join Waitlist</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Family</div>
+        <div class="price-amt">$25</div>
+        <div class="price-per">per month</div>
+        <div class="price-desc">Shared vault with controlled access for family members.</div>
+        <ul class="price-features">
+          <li>Everything in Managed</li>
+          <li>Up to 5 family members</li>
+          <li>Per-member access scoping</li>
+          <li>Executor guided walkthrough</li>
+          <li>Attorney sharing portal</li>
+        </ul>
+        <a href="#waitlist" class="price-btn secondary">Join Waitlist</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amt">Custom</div>
+        <div class="price-per">&nbsp;</div>
+        <div class="price-desc">White-label for law firms, wealth managers, and financial advisors.</div>
+        <ul class="price-features">
+          <li>Self-hosted deployment</li>
+          <li>White-label branding</li>
+          <li>Client portal</li>
+          <li>SOC 2 roadmap</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="mailto:prahlad.menon@quant.md" class="price-btn secondary">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Waitlist CTA -->
+<section class="cta-section" id="waitlist">
+  <div class="section-label">Early Access</div>
+  <h2>Be the first to secure your legacy</h2>
+  <p>Soul Legacy is in private beta. Join the waitlist for early access and founding member pricing.</p>
+  <form class="waitlist-form" onsubmit="handleWaitlist(event)">
+    <input type="text" id="wl-name" placeholder="Your name" required />
+    <input type="email" id="wl-email" placeholder="your@email.com" required />
+    <button type="submit" class="btn-primary">Reserve My Spot</button>
+  </form>
+  <p id="wl-thanks" style="display:none;margin-top:16px;color:var(--green)">✅ You're on the list! We'll be in touch.</p>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div>
+    <div class="brand">🏛️ Soul Legacy</div>
+    <div class="copy" style="margin-top:4px">A <a href="https://thinkcreateai.com">ThinkCreate.AI</a> product · Built on <a href="https://github.com/menonpg/soul.py">soul.py</a></div>
+  </div>
+  <div style="display:flex;gap:20px;align-items:center">
+    <a href="mailto:prahlad.menon@quant.md">Contact</a>
+    <a href="https://calendly.com/menon-prahlad/30min">Book a Demo</a>
+    <a href="#security">Security</a>
+  </div>
+  <div class="copy">© 2026 ThinkCreate.AI · BSL 1.1 → MIT 2030</div>
+</footer>
+
+<script>
+function handleWaitlist(e) {
+  e.preventDefault();
+  const name  = document.getElementById('wl-name').value;
+  const email = document.getElementById('wl-email').value;
+
+  // POST to soulmate-api signup endpoint
+  fetch('https://soulmate-api-production.up.railway.app/v1/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, tier: 'waitlist_legacy' })
+  })
+  .then(() => {
+    document.querySelector('.waitlist-form').style.display = 'none';
+    document.getElementById('wl-thanks').style.display = 'block';
+  })
+  .catch(() => {
+    // Show thanks anyway — log failure silently
+    document.querySelector('.waitlist-form').style.display = 'none';
+    document.getElementById('wl-thanks').style.display = 'block';
+  });
+}
+</script>
+
+</body>
+</html>
