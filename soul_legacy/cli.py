@@ -312,3 +312,83 @@ def status():
         title="[cyan]🏛️  Vault Status[/cyan]",
         border_style="cyan"
     ))
+
+
+@main.command()
+@click.argument("file_path", type=click.Path(exists=True))
+@click.option("--section", "-s", type=click.Choice(list(SECTION_FIELDS.keys())),
+              help="Override auto-detected section")
+@click.option("--record-id", "-r", help="Link to existing record ID")
+@click.option("--azure", is_flag=True, help="Use Azure OCR + embeddings")
+def ingest(file_path, section, record_id, azure):
+    """Ingest a document into the vault (PDF, image, Word)"""
+    from .ingest import ingest_file
+    v = get_vault()
+
+    config = {}
+    if azure:
+        import json as _json, os as _os
+        try:
+            keys = _json.load(open(_os.path.expanduser("~/.openclaw/api_keys.json")))
+            az   = keys.get("azure_openai", {})
+            config = {
+                "ocr_mode":       "azure",
+                "embed_mode":     "azure",
+                "azure_endpoint": az.get("endpoint"),
+                "azure_key":      az.get("api_key"),
+            }
+        except:
+            console.print("[yellow]Could not load Azure keys — falling back to local[/yellow]")
+
+    try:
+        result = ingest_file(v, file_path, section=section,
+                             record_id=record_id, config=config)
+        console.print(Panel(
+            f"[bold]Section:[/bold]  {result['section']}/{result['record_id']}\n"
+            f"[bold]File:[/bold]     {result['filename']}\n"
+            f"[bold]Chunks:[/bold]   {result['chunks']}\n"
+            f"[bold]Method:[/bold]   {result['method']}\n"
+            f"[bold]Dims:[/bold]     {result['dims']}",
+            title="[green]✅ Ingested[/green]", border_style="green"
+        ))
+    except Exception as e:
+        console.print(f"[red]❌ {e}[/red]")
+
+
+@main.command()
+@click.argument("query")
+@click.option("--section", "-s", type=click.Choice(list(SECTION_FIELDS.keys())))
+@click.option("--top-k", default=5)
+@click.option("--azure", is_flag=True)
+def search(query, section, top_k, azure):
+    """Semantic search across all ingested documents"""
+    from .ingest import search as do_search
+    v      = get_vault()
+    config = _azure_config() if azure else {}
+
+    results = do_search(v, query, top_k=top_k, section=section, config=config)
+    if not results:
+        console.print("[dim]No results found.[/dim]")
+        return
+
+    for i, r in enumerate(results, 1):
+        console.print(Panel(
+            f"[dim]{r['text'][:400]}...[/dim]",
+            title=f"[cyan]#{i} {r['doc_id']} (score: {r['score']})[/cyan]",
+            border_style="dim"
+        ))
+
+
+def _azure_config():
+    import json as _json, os as _os
+    try:
+        keys = _json.load(open(_os.path.expanduser("~/.openclaw/api_keys.json")))
+        az   = keys.get("azure_openai", {})
+        return {
+            "ocr_mode":       "azure",
+            "embed_mode":     "azure",
+            "azure_endpoint": az.get("endpoint"),
+            "azure_key":      az.get("api_key"),
+        }
+    except:
+        return {}

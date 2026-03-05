@@ -20,11 +20,25 @@ dependencies = [
     "soul-agent>=0.1.5",
     "gitpython>=3.1",
     "python-dotenv>=1.0",
+    "pdfplumber>=0.10",
 ]
 
 [project.optional-dependencies]
-blockchain = ["web3>=6.0"]
-dev        = ["pytest", "black", "mypy"]
+# Local OCR — needs system tesseract installed
+ocr-local   = ["pytesseract", "pillow", "pdf2image"]
+# Local embeddings — ONNX, no PyTorch, no GPU
+embed-local = ["fastembed"]
+# Word docs
+docx        = ["python-docx"]
+# Blockchain anchoring
+blockchain  = ["web3>=6.0"]
+# Everything
+all = [
+    "pytesseract", "pillow", "pdf2image",
+    "fastembed",
+    "python-docx",
+]
+dev = ["pytest", "black", "mypy"]
 
 [project.scripts]
 soul-legacy = "soul_legacy.cli:main"
@@ -34,5 +48,5 @@ Homepage   = "https://github.com/menonpg/soul-legacy"
 Repository = "https://github.com/menonpg/soul-legacy"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["soul_legacy*"]
+where    = ["."]
+include  = ["soul_legacy*"]
