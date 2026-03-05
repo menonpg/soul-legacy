@@ -73,9 +73,11 @@ def signup(req: LoginRequest):
 from .api.vault import router as vault_router
 from .api.chat  import router as chat_router
 from .api.ingest import router as ingest_router
+from .api.deadmans import router as deadmans_router
 
 app.include_router(vault_router,  prefix="/api/vault",  tags=["vault"])
 app.include_router(chat_router,   prefix="/api/chat",   tags=["chat"])
+app.include_router(deadmans_router, prefix="/api/deadmans", tags=["deadmans"])
 app.include_router(ingest_router, prefix="/api/ingest", tags=["ingest"])
 
 
