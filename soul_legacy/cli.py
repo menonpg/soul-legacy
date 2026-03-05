@@ -392,3 +392,69 @@ def _azure_config():
         }
     except:
         return {}
+
+
+@main.command("soul-chat")
+@click.option("--api-key", envvar="ANTHROPIC_API_KEY")
+@click.option("--model", default="claude-haiku-4-5")
+@click.option("--mode", type=click.Choice(["auto","rag","rlm"]), default="auto",
+              help="auto=router decides, rag=fast lookup, rlm=exhaustive synthesis")
+@click.option("--azure", is_flag=True, help="Use Azure embeddings for RAG")
+def soul_chat(api_key, model, mode, azure):
+    """Full soul.py v2.0 chat — RAG + RLM + Darwin + Memory"""
+    from .soul_integration import SoulLegacyAgent
+    v = get_vault()
+
+    try:
+        agent = SoulLegacyAgent(v, api_key=api_key, model=model)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        return
+
+    console.print(Panel.fit(
+        "[bold cyan]🏛️  Estate Advisor — soul.py v2.0[/bold cyan]\n"
+        "[dim]RAG + RLM + Darwin · Type 'exit' to quit · '/route' to see last route[/dim]",
+        border_style="cyan"
+    ))
+    console.print(f"[dim]Mode: {mode} | Model: {model}[/dim]\n")
+
+    last_result = None
+    while True:
+        console.print()
+        q = Prompt.ask("[cyan]You[/cyan]")
+        if q.lower() in ("exit", "quit", "q"):
+            break
+        if q == "/route" and last_result:
+            console.print(f"[dim]Route: {last_result.get('route')} | "
+                          f"{last_result.get('total_ms')}ms[/dim]")
+            continue
+        if q == "/soul":
+            console.print(Panel(agent.soul(), title="[cyan]Current Advisor Persona[/cyan]",
+                                border_style="dim"))
+            continue
+        if q == "/memory":
+            mem = (v.vault.dir if hasattr(v,'vault') else v.dir)
+            import os as _os
+            mp = _os.path.join(v.dir, "MEMORY.md")
+            if _os.path.exists(mp):
+                console.print(open(mp).read()[-2000:])
+            continue
+
+        with console.status(f"[dim]Thinking ({mode})...[/dim]"):
+            last_result = agent.ask(q)
+
+        route_tag = f"[dim][{last_result.get('route','?')} · {last_result.get('total_ms')}ms][/dim]"
+        console.print(f"\n[bold]Advisor:[/bold] {last_result['answer']}")
+        console.print(route_tag)
+
+
+@main.command()
+def memory():
+    """Show vault interaction memory (MEMORY.md)"""
+    v  = get_vault()
+    mp = os.path.join(v.dir, "MEMORY.md")
+    if not os.path.exists(mp):
+        console.print("[dim]No memory yet. Start chatting![/dim]")
+        return
+    text = open(mp).read()
+    console.print(Panel(text[-3000:], title="[cyan]Vault Memory[/cyan]", border_style="dim"))
