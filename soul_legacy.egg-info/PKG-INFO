@@ -1,0 +1,134 @@
+Metadata-Version: 2.4
+Name: soul-legacy
+Version: 0.1.0
+Summary: Digital estate vault — local-first, encrypted, LLM-queryable
+Author-email: Prahlad Menon <menon.prahlad@gmail.com>
+License: BSL-1.1
+Project-URL: Homepage, https://github.com/menonpg/soul-legacy
+Project-URL: Repository, https://github.com/menonpg/soul-legacy
+Keywords: estate,vault,encryption,legacy,soul
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: click>=8.0
+Requires-Dist: rich>=13.0
+Requires-Dist: pydantic>=2.0
+Requires-Dist: cryptography>=41.0
+Requires-Dist: requests>=2.28
+Requires-Dist: soul-agent>=0.1.5
+Requires-Dist: gitpython>=3.1
+Requires-Dist: python-dotenv>=1.0
+Requires-Dist: pdfplumber>=0.10
+Provides-Extra: ocr-local
+Requires-Dist: pytesseract; extra == "ocr-local"
+Requires-Dist: pillow; extra == "ocr-local"
+Requires-Dist: pdf2image; extra == "ocr-local"
+Provides-Extra: embed-local
+Requires-Dist: fastembed; extra == "embed-local"
+Provides-Extra: docx
+Requires-Dist: python-docx; extra == "docx"
+Provides-Extra: blockchain
+Requires-Dist: web3>=6.0; extra == "blockchain"
+Provides-Extra: all
+Requires-Dist: pytesseract; extra == "all"
+Requires-Dist: pillow; extra == "all"
+Requires-Dist: pdf2image; extra == "all"
+Requires-Dist: fastembed; extra == "all"
+Requires-Dist: python-docx; extra == "all"
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Dynamic: license-file
+
+# 🏛️ soul-legacy
+
+> *Your life, documented. Your wishes, honored.*
+
+**soul-legacy** is a local-first, encrypted digital estate vault with LLM chat. It's the estate and legacy module of the [soul.py](https://github.com/menonpg/soul.py) ecosystem.
+
+Store everything that matters — assets, insurance, wills, debts, beneficiary designations — encrypted on your own device or in our managed cloud. Ask questions about your estate in plain English. Give your family a clear path forward.
+
+## Why
+
+When someone dies, their family spends months hunting for documents. Most of it is in paper, scattered across files, lawyers, and email. **soul-legacy fixes that.**
+
+## Quick Start
+
+```bash
+pip install soul-legacy
+soul-legacy init
+```
+
+That's it. A guided wizard walks you through setup.
+
+## What It Stores
+
+| Section | What |
+|---------|------|
+| `assets` | Bank accounts, brokerage, real estate, vehicles, crypto |
+| `insurance` | Life, health, property, auto policies |
+| `legal` | Will, trust, power of attorney, healthcare directive |
+| `debts` | Mortgage, loans, credit cards |
+| `contacts` | Attorney, accountant, executor, advisors |
+| `beneficiaries` | Who gets what |
+| `digital` | Email, social media, crypto wallets |
+| `wishes` | Funeral, medical, personal messages |
+
+## Commands
+
+```bash
+soul-legacy init                    # create vault (guided)
+soul-legacy add assets              # add an asset
+soul-legacy list assets             # list all assets
+soul-legacy show assets <id>        # view a record
+soul-legacy chat                    # ask questions in plain English
+soul-legacy summary                 # full estate overview
+soul-legacy status                  # vault health + fingerprint
+```
+
+## Chat Examples
+
+```
+You: What life insurance policies do I have?
+You: Who are my beneficiaries?
+You: What debts would my estate need to settle?
+You: Generate a checklist for my executor
+You: What's my estimated net worth?
+```
+
+## Security Model
+
+- **Zero-knowledge encryption** — AES-128 + HMAC-SHA256, key never leaves device
+- **PBKDF2-SHA256** key derivation, 600,000 iterations (OWASP 2023)
+- **GitHub storage** — repo contains only ciphertext
+- **Blockchain anchoring** — vault hash committed to Polygon (optional)
+- **Open source** — audit the encryption yourself
+
+**If you lose your passphrase, your data is unrecoverable. Store it safely.**
+
+## Storage Options
+
+| Mode | Command | Cost |
+|------|---------|------|
+| Local only | `soul-legacy init` | Free |
+| GitHub backup | `soul-legacy init --github` | Free |
+| Managed cloud | `soul-legacy init --cloud` | $9-29/mo |
+
+## Part of the soul.py Ecosystem
+
+```
+soul.py        →  who you are (identity, memory, values)
+soul-legacy    →  what you have (assets, wishes, legacy)
+soul-schema    →  data layer
+soulmate       →  enterprise memory
+```
+
+## License
+
+BSL 1.1 — free for personal use. Contact us for commercial licensing.
+Source available. Converts to MIT on 2030-03-05.
+
+---
+
+Built by [The Menon Lab](https://themenonlab.com)

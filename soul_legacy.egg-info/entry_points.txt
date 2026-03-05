@@ -1,0 +1,2 @@
+[console_scripts]
+soul-legacy = soul_legacy.cli:main

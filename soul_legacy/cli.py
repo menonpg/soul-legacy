@@ -458,3 +458,21 @@ def memory():
         return
     text = open(mp).read()
     console.print(Panel(text[-3000:], title="[cyan]Vault Memory[/cyan]", border_style="dim"))
+
+
+@main.command()
+@click.option("--host", default="127.0.0.1", help="Host (use 0.0.0.0 for Railway/Docker)")
+@click.option("--port", default=8080, help="Port")
+@click.option("--cloud", is_flag=True, help="Cloud mode — enable multi-tenant accounts")
+@click.option("--reload", is_flag=True, help="Auto-reload on code changes (dev)")
+def serve(host, port, cloud, reload):
+    """Start the soul-legacy web UI"""
+    import uvicorn
+    if cloud:
+        os.environ["SOUL_LEGACY_MODE"] = "cloud"
+        console.print(f"[cyan]🌐 Cloud mode — multi-tenant accounts enabled[/cyan]")
+    else:
+        console.print(f"[cyan]🏠 Local mode — single vault, passphrase auth[/cyan]")
+    console.print(f"[bold]Open:[/bold] http://{host}:{port}\n")
+    uvicorn.run("soul_legacy.server.app:app",
+                host=host, port=port, reload=reload)
