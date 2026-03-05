@@ -1,0 +1,17 @@
+# Core dependencies
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+PyJWT>=2.8
+click>=8.0
+rich>=13.0
+pydantic>=2.0
+cryptography>=41.0
+requests>=2.28
+soul-agent>=0.1.5
+gitpython>=3.1
+python-dotenv>=1.0
+pdfplumber>=0.10
+
+# Install the package itself
+-e .
