@@ -212,13 +212,15 @@
     <div class="auth-logo">🏛️</div>
     <h1>Soul Legacy</h1>
     <p>Your digital estate vault</p>
+    <div id="auth-help-cloud" style="font-size:0.78rem;color:#888899;margin-bottom:12px;text-align:left;background:#1a1a26;border-radius:8px;padding:10px 12px;line-height:1.6">Sign in or create a free account to access your cloud vault. Your data is encrypted — we can't read it.</div>
+    <div id="auth-help-local" style="display:none;font-size:0.78rem;color:#888899;margin-bottom:12px;text-align:left;background:#1a1a26;border-radius:8px;padding:10px 12px;line-height:1.6">Local mode requires <code style="background:#2a2a3a;padding:1px 5px;border-radius:3px">soul-legacy serve</code> running on your machine.<br>Your passphrase is set when you run <code style="background:#2a2a3a;padding:1px 5px;border-radius:3px">soul-legacy init</code>. This cloud app cannot access a local vault.</div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="setAuthMode('local')">Local Vault</button>
-      <button class="auth-tab" onclick="setAuthMode('cloud')">Cloud Account</button>
+      <button class="auth-tab" onclick="setAuthMode('local')">Local Vault</button>
+      <button class="auth-tab active" onclick="setAuthMode('cloud')">Cloud Account</button>
     </div>
 
     <!-- Local mode -->
-    <div id="local-form">
+    <div id="local-form" style="display:none">
       <input class="auth-input" id="local-pass" type="password"
              placeholder="Vault passphrase" onkeypress="if(event.key==='Enter')unlock()"/>
       <input class="auth-input" id="local-dir" type="text"
@@ -227,7 +229,7 @@
     </div>
 
     <!-- Cloud mode -->
-    <div id="cloud-form" style="display:none">
+    <div id="cloud-form">
       <input class="auth-input" id="cloud-email" type="email" placeholder="Email" />
       <input class="auth-input" id="cloud-pass" type="password" placeholder="Password"
              onkeypress="if(event.key==='Enter')cloudLogin()"/>
@@ -235,8 +237,36 @@
       <button class="btn-secondary btn" style="width:100%;margin-top:8px"
               onclick="cloudSignup()">Create Account</button>
     </div>
-    <div class="auth-err" id="auth-err"></div>
+    <div id="auth-err" style="color:#f87171;font-size:0.8rem;margin-top:10px;min-height:20px"></div>
     <div class="auth-brand">by ThinkCreate.AI</div>
+  </div>
+</div>
+
+<!-- Onboarding Modal -->
+<div id="onboard-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center">
+  <div style="background:#12121a;border:1px solid #2a2a3a;border-radius:16px;padding:36px;max-width:500px;width:90%;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px">🏛️</div>
+    <h2 style="font-size:1.3rem;margin-bottom:8px">Welcome to Soul Legacy</h2>
+    <p style="color:#888899;font-size:0.88rem;margin-bottom:24px;line-height:1.6">Your encrypted estate vault is ready. Here's how to get started:</p>
+    <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:28px">
+      <div style="background:#1a1a26;border-radius:8px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:1.2rem">1️⃣</span>
+        <div><div style="font-weight:600;font-size:0.88rem;margin-bottom:3px">Add your first record</div><div style="font-size:0.78rem;color:#888899">Click any section in the sidebar — Assets, Insurance, Legal — and add a record.</div></div>
+      </div>
+      <div style="background:#1a1a26;border-radius:8px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:1.2rem">2️⃣</span>
+        <div><div style="font-weight:600;font-size:0.88rem;margin-bottom:3px">Upload documents</div><div style="font-size:0.78rem;color:#888899">Use Documents to ingest a will, insurance policy, or any PDF. The AI will index it for chat.</div></div>
+      </div>
+      <div style="background:#1a1a26;border-radius:8px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:1.2rem">3️⃣</span>
+        <div><div style="font-weight:600;font-size:0.88rem;margin-bottom:3px">Ask questions</div><div style="font-size:0.78rem;color:#888899">Open Estate Advisor and ask anything — "What insurance do I have?" or "Who are my beneficiaries?"</div></div>
+      </div>
+      <div style="background:#1a1a26;border:1px solid #7c6ef033;border-radius:8px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:1.2rem">🔑</span>
+        <div><div style="font-weight:600;font-size:0.88rem;margin-bottom:3px">Bring your own AI key (optional)</div><div style="font-size:0.78rem;color:#888899">For AI chat, add an Anthropic or OpenAI key in Settings. Without it, basic features still work.</div></div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('onboard-modal').style.display='none';localStorage.setItem('sl_onboarded','1')" style="background:#7c6ef0;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%">Get Started →</button>
   </div>
 </div>
 
@@ -349,6 +379,8 @@ const API    = '';  // same origin
 // ── Auth ──────────────────────────────────────────────────────────────────────
 function setAuthMode(mode) {
   AUTH_MODE = mode;
+  document.getElementById('auth-help-cloud').style.display = mode==='cloud' ? 'block' : 'none';
+  document.getElementById('auth-help-local').style.display = mode==='local' ? 'block' : 'none';
   document.querySelectorAll('.auth-tab').forEach((t,i) =>
     t.classList.toggle('active', (i===0&&mode==='local')||(i===1&&mode==='cloud')));
   document.getElementById('local-form').style.display = mode==='local' ? '' : 'none';
@@ -361,7 +393,7 @@ async function unlock() {
   const body    = { passphrase: pass };
   if (dir) body.vault_dir = dir;
   const r = await apiFetch('/api/unlock', 'POST', body, false);
-  if (r.token) { TOKEN = r.token; localStorage.setItem('sl_token', TOKEN); initApp(); }
+  if (r.token) { TOKEN = r.token; localStorage.setItem('sl_token', TOKEN); initApp(); showOnboard(); }
   else showErr(r.detail || 'Wrong passphrase');
 }
 
@@ -370,7 +402,7 @@ async function cloudLogin() {
     email: document.getElementById('cloud-email').value,
     password: document.getElementById('cloud-pass').value
   }, false);
-  if (r.token) { TOKEN = r.token; localStorage.setItem('sl_token', TOKEN); initApp(); }
+  if (r.token) { TOKEN = r.token; localStorage.setItem('sl_token', TOKEN); initApp(); showOnboard(); }
   else showErr(r.detail || 'Login failed');
 }
 
@@ -379,7 +411,7 @@ async function cloudSignup() {
     email: document.getElementById('cloud-email').value,
     password: document.getElementById('cloud-pass').value
   }, false);
-  if (r.token) { TOKEN = r.token; localStorage.setItem('sl_token', TOKEN); initApp(); }
+  if (r.token) { TOKEN = r.token; localStorage.setItem('sl_token', TOKEN); initApp(); showOnboard(); }
   else showErr(r.detail || 'Signup failed');
 }
 
@@ -750,6 +782,14 @@ function toast(msg, type='ok') {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 if (TOKEN) initApp();
+
+function showOnboard() {
+  if (!localStorage.getItem('sl_onboarded')) {
+    const m = document.getElementById('onboard-modal');
+    m.style.display = 'flex';
+  }
+}
+
 </script>
 </body>
 </html>
