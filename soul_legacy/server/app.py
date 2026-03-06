@@ -114,20 +114,26 @@ def unlock(req: UnlockRequest):
 def login(req: LoginRequest):
     """Cloud mode: email + password → JWT"""
     from .auth import verify_cloud_login
+    import hashlib
     user = verify_cloud_login(req.email, req.password)
     if not user:
         raise HTTPException(401, "Invalid credentials")
+    # Derive vault passphrase from password (same as signup)
+    vault_pass = hashlib.sha256(f"{req.password}:{user['id']}:vault".encode()).hexdigest()[:32]
     token = create_token({"user_id": user["id"], "vault_dir": user["vault_dir"],
-                          "mode": "cloud", "email": req.email})
+                          "mode": "cloud", "email": req.email, "vault_pass": vault_pass})
     return {"token": token, "mode": "cloud", "name": user.get("name")}
 
 @app.post("/api/signup")
 def signup(req: LoginRequest):
     """Cloud mode: create account"""
     from .auth import create_cloud_account
+    import hashlib
     user = create_cloud_account(req.email, req.password)
+    # Derive vault passphrase from password (user never sees this)
+    vault_pass = hashlib.sha256(f"{req.password}:{user['id']}:vault".encode()).hexdigest()[:32]
     token = create_token({"user_id": user["id"], "vault_dir": user["vault_dir"],
-                          "mode": "cloud", "email": req.email})
+                          "mode": "cloud", "email": req.email, "vault_pass": vault_pass})
     return {"token": token, "mode": "cloud"}
 
 

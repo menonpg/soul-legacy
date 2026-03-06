@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: soul-legacy
-Version: 0.1.0
+Version: 0.1.1
 Summary: Digital estate vault — local-first, encrypted, LLM-queryable
 Author-email: Prahlad Menon <menon.prahlad@gmail.com>
 License: BSL-1.1
@@ -10,6 +10,10 @@ Keywords: estate,vault,encryption,legacy,soul
 Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: fastapi>=0.110
+Requires-Dist: uvicorn[standard]>=0.27
+Requires-Dist: python-multipart>=0.0.9
+Requires-Dist: PyJWT>=2.8
 Requires-Dist: click>=8.0
 Requires-Dist: rich>=13.0
 Requires-Dist: pydantic>=2.0
@@ -132,3 +136,4 @@ Source available. Converts to MIT on 2030-03-05.
 ---
 
 Built by [The Menon Lab](https://themenonlab.com)
+# Trigger rebuild
