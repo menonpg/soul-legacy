@@ -1,3 +1,5 @@
+import logging
+logging.basicConfig(level=logging.DEBUG)
 """
 soul-legacy web server
 Local:  soul-legacy serve  → localhost:8080, passphrase auth
@@ -27,6 +29,19 @@ if STATIC_DIR.exists():
 
 
 
+
+@app.on_event("startup")
+async def startup_log():
+    import logging
+    logging.info("soul-legacy server starting up")
+    logging.info(f"DATABASE_URL set: {bool(os.environ.get('DATABASE_URL'))}")
+    try:
+        from .auth import _get_db
+        conn, db_type = _get_db()
+        logging.info(f"DB connection OK: {db_type}")
+        if hasattr(conn, 'close'): conn.close()
+    except Exception as e:
+        logging.error(f"DB init error: {e}")
 
 @app.get("/api/mode")
 def get_mode():
