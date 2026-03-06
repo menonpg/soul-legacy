@@ -563,7 +563,7 @@ function handleWaitlist(e) {
   fetch('https://soulmate-api-production.up.railway.app/v1/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, tier: 'waitlist_legacy' })
+    body: JSON.stringify({ name, email, tier: 'waitlist_legacy', source: 'soul-legacy-waitlist' })
   })
   .then(r => r.ok ? r.json() : Promise.reject(r))
   .then(data => showSuccess(name, data.api_key))
