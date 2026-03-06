@@ -34,14 +34,8 @@ if STATIC_DIR.exists():
 async def startup_log():
     import logging
     logging.info("soul-legacy server starting up")
-    logging.info(f"DATABASE_URL set: {bool(os.environ.get('DATABASE_URL'))}")
-    try:
-        from .auth import _get_db
-        conn, db_type = _get_db()
-        logging.info(f"DB connection OK: {db_type}")
-        if hasattr(conn, 'close'): conn.close()
-    except Exception as e:
-        logging.error(f"DB init error: {e}")
+    logging.info(f"Mode: {os.environ.get('SOUL_LEGACY_MODE', 'local')}")
+    logging.info(f"Supabase configured: {bool(os.environ.get('SUPABASE_URL'))}")
 
 
 @app.get("/api/authsrc")
@@ -107,7 +101,7 @@ def unlock(req: UnlockRequest):
     vault_dir = req.vault_dir or os.path.expanduser("~/.soul-legacy/vault")
     if not verify_passphrase(vault_dir, req.passphrase):
         raise HTTPException(401, "Invalid passphrase")
-    token = create_token({"vault_dir": vault_dir, "mode": "local"})
+    token = create_token({"vault_dir": vault_dir, "mode": "local", "vault_pass": req.passphrase})
     return {"token": token, "mode": "local"}
 
 @app.post("/api/login")

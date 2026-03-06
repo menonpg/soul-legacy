@@ -166,16 +166,16 @@ def _add_interactive(vault, section):
 
 
 @main.command()
-@click.argument("section", type=click.Choice(list(SECTION_FIELDS.keys())))
+@click.argument("section", type=click.Choice(SECTION_FIELDS.keys()))
 def add(section):
     """Add a record to a vault section"""
     v = get_vault()
     _add_interactive(v, section)
 
 
-@main.command()
-@click.argument("section", type=click.Choice(list(SECTION_FIELDS.keys())))
-def list(section):
+@main.command("list")
+@click.argument("section", type=click.Choice(SECTION_FIELDS.keys()))
+def list_records(section):
     """List all records in a section"""
     v    = get_vault()
     ids  = v.list(section)
@@ -198,7 +198,7 @@ def list(section):
 
 
 @main.command()
-@click.argument("section", type=click.Choice(list(SECTION_FIELDS.keys())))
+@click.argument("section", type=click.Choice(SECTION_FIELDS.keys()))
 @click.argument("record_id")
 def show(section, record_id):
     """Show a specific record"""
@@ -212,7 +212,7 @@ def show(section, record_id):
 
 
 @main.command()
-@click.argument("section", type=click.Choice(list(SECTION_FIELDS.keys())))
+@click.argument("section", type=click.Choice(SECTION_FIELDS.keys()))
 @click.argument("record_id")
 def delete(section, record_id):
     """Delete a record"""
@@ -316,7 +316,7 @@ def status():
 
 @main.command()
 @click.argument("file_path", type=click.Path(exists=True))
-@click.option("--section", "-s", type=click.Choice(list(SECTION_FIELDS.keys())),
+@click.option("--section", "-s", type=click.Choice(SECTION_FIELDS.keys()),
               help="Override auto-detected section")
 @click.option("--record-id", "-r", help="Link to existing record ID")
 @click.option("--azure", is_flag=True, help="Use Azure OCR + embeddings")
@@ -357,7 +357,7 @@ def ingest(file_path, section, record_id, azure):
 
 @main.command()
 @click.argument("query")
-@click.option("--section", "-s", type=click.Choice(list(SECTION_FIELDS.keys())))
+@click.option("--section", "-s", type=click.Choice(SECTION_FIELDS.keys()))
 @click.option("--top-k", default=5)
 @click.option("--azure", is_flag=True)
 def search(query, section, top_k, azure):
