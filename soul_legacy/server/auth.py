@@ -119,40 +119,51 @@ def create_cloud_account(email: str, password: str, name: str = "") -> dict:
     vp_path.chmod(0o600)
 
     now = datetime.now().isoformat()
-    if db_type == "postgres":
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO soul_legacy_accounts VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (email) DO NOTHING",
-            (user_id, email, _hash_pw(password), name, vault_dir, now)
-        )
-        conn.commit()
-        conn.close()
+    record = {"id": user_id, "email": email, "pw_hash": _hash_pw(password),
+              "name": name, "vault_dir": vault_dir, "created_at": now}
+
+    if _use_supabase():
+        try:
+            _sb_post(record)
+        except Exception as e:
+            if "duplicate" in str(e).lower() or "unique" in str(e).lower() or "409" in str(e):
+                raise HTTPException(409, "Email already registered")
+            raise HTTPException(500, f"Account creation failed: {e}")
     else:
-        conn.execute("INSERT OR IGNORE INTO soul_legacy_accounts VALUES (?,?,?,?,?,?)",
-                     (user_id, email, _hash_pw(password), name, vault_dir, now))
-        conn.commit()
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        conn = sqlite3.connect(DB_PATH)
+        try:
+            conn.execute("INSERT OR IGNORE INTO soul_legacy_accounts VALUES (?,?,?,?,?,?)",
+                         (user_id, email, _hash_pw(password), name, vault_dir, now))
+            conn.commit()
+        finally:
+            conn.close()
 
     return {"id": user_id, "email": email, "vault_dir": vault_dir, "name": name}
 
 
 def verify_cloud_login(email: str, password: str) -> Optional[dict]:
-    conn, db_type = _get_db()
-    if db_type == "postgres":
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT id,email,name,vault_dir FROM soul_legacy_accounts WHERE email=%s AND pw_hash=%s",
-            (email, _hash_pw(password))
-        )
-        row = cur.fetchone()
-        conn.close()
+    if _use_supabase():
+        try:
+            rows = _sb_get({"email": f"eq.{email}", "pw_hash": f"eq.{_hash_pw(password)}",
+                            "select": "id,email,name,vault_dir", "limit": "1"})
+            if not rows:
+                return None
+            r = rows[0]
+            return {"id": r["id"], "email": r["email"], "name": r["name"], "vault_dir": r["vault_dir"]}
+        except Exception:
+            return None
     else:
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        conn = sqlite3.connect(DB_PATH)
         row = conn.execute(
             "SELECT id,email,name,vault_dir FROM soul_legacy_accounts WHERE email=? AND pw_hash=?",
             (email, _hash_pw(password))
         ).fetchone()
-    if not row:
-        return None
-    return {"id": row[0], "email": row[1], "name": row[2], "vault_dir": row[3]}
+        conn.close()
+        if not row:
+            return None
+        return {"id": row[0], "email": row[1], "name": row[2], "vault_dir": row[3]}
 
 
 def get_vault_for_token(token_data: dict):
