@@ -232,6 +232,7 @@
   </div>
   <div class="nav-links">
     <a href="#how">How it works</a>
+    <a href="#docs">Docs</a>
     <a href="#security">Security</a>
     <a href="#pricing">Pricing</a>
     <a href="#waitlist" class="nav-cta">Join Waitlist</a>
@@ -251,7 +252,7 @@
   </p>
   <div class="hero-actions">
     <a href="#waitlist" class="btn-primary">Join the Waitlist</a>
-    <a href="https://github.com/menonpg/soul-legacy" class="btn-secondary">View Docs</a>
+    <a href="#docs" class="btn-secondary">View Docs</a>
   </div>
 
   <!-- Terminal demo -->
@@ -442,6 +443,71 @@
     <button type="submit" class="btn-primary">Reserve My Spot</button>
   </form>
   <p id="wl-thanks" style="display:none;margin-top:16px;color:var(--green)">✅ You're on the list! We'll be in touch.</p>
+</section>
+
+<!-- Docs -->
+<section id="docs" style="background: var(--bg); border-top: 1px solid var(--border);">
+  <div class="section-inner" style="max-width:800px">
+    <div class="section-label">Documentation</div>
+    <h2 class="section-title">Get started in 2 minutes</h2>
+
+    <h3 style="margin:36px 0 12px;font-size:1rem;color:var(--fg)">Installation</h3>
+    <div class="terminal" style="max-width:100%">
+      <div class="terminal-bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <div class="terminal-body">
+        <div class="line"><span class="prompt">$ </span><span class="cmd">pip install soul-legacy</span></div>
+        <div class="line"><span class="prompt">$ </span><span class="cmd">soul-legacy init</span></div>
+        <div class="line ok">&#x2705; Vault created. Encrypted with AES-256.</div>
+      </div>
+    </div>
+
+    <h3 style="margin:36px 0 12px;font-size:1rem;color:var(--fg)">Commands</h3>
+    <div class="terminal" style="max-width:100%">
+      <div class="terminal-bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <div class="terminal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px">
+        <div><div class="line"><span class="cmd">soul-legacy init</span></div><div class="line out" style="margin-bottom:12px">Create vault (guided wizard)</div></div>
+        <div><div class="line"><span class="cmd">soul-legacy add assets</span></div><div class="line out" style="margin-bottom:12px">Add an asset record</div></div>
+        <div><div class="line"><span class="cmd">soul-legacy list legal</span></div><div class="line out" style="margin-bottom:12px">List legal documents</div></div>
+        <div><div class="line"><span class="cmd">soul-legacy ingest will.pdf</span></div><div class="line out" style="margin-bottom:12px">Import &amp; index a document</div></div>
+        <div><div class="line"><span class="cmd">soul-legacy chat</span></div><div class="line out" style="margin-bottom:12px">Ask questions in plain English</div></div>
+        <div><div class="line"><span class="cmd">soul-legacy summary</span></div><div class="line out" style="margin-bottom:12px">Full estate overview</div></div>
+        <div><div class="line"><span class="cmd">soul-legacy status</span></div><div class="line out" style="margin-bottom:12px">Vault health + fingerprint</div></div>
+        <div><div class="line"><span class="cmd">soul-legacy serve</span></div><div class="line out" style="margin-bottom:12px">Start local web UI</div></div>
+      </div>
+    </div>
+
+    <h3 style="margin:36px 0 14px;font-size:1rem;color:var(--fg)">What you can ask</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:36px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.84rem;color:var(--muted)">"What life insurance policies do I have?"</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.84rem;color:var(--muted)">"Who are my beneficiaries for my 401k?"</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.84rem;color:var(--muted)">"What debts would my estate need to settle?"</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.84rem;color:var(--muted)">"Generate a checklist for my executor"</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.84rem;color:var(--muted)">"What does my will say about the lake house?"</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.84rem;color:var(--muted)">"What\'s my estimated net worth?"</div>
+    </div>
+
+    <h3 style="margin:0 0 14px;font-size:1rem;color:var(--fg)">Storage options</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:36px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:8px 12px;color:var(--muted);font-weight:600">Mode</th>
+        <th style="text-align:left;padding:8px 12px;color:var(--muted);font-weight:600">Command</th>
+        <th style="text-align:left;padding:8px 12px;color:var(--muted);font-weight:600">Cost</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 12px">Local only</td><td style="padding:10px 12px"><code style="background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--muted)">soul-legacy init</code></td><td style="padding:10px 12px;color:#4ade80;font-weight:600">Free</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 12px">GitHub backup</td><td style="padding:10px 12px"><code style="background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--muted)">soul-legacy init --github</code></td><td style="padding:10px 12px;color:#4ade80;font-weight:600">Free</td></tr>
+        <tr><td style="padding:10px 12px">Managed cloud</td><td style="padding:10px 12px"><code style="background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--muted)">soul-legacy init --cloud</code></td><td style="padding:10px 12px;color:var(--muted)">$15–25/mo</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin:0 0 14px;font-size:1rem;color:var(--fg)">Security model</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px"><div style="font-weight:700;font-size:0.85rem;margin-bottom:6px">&#x1F510; AES-128-CBC + HMAC-SHA256</div><div style="font-size:0.78rem;color:var(--muted)">Key derived via PBKDF2-SHA256, 600,000 iterations (OWASP 2023)</div></div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px"><div style="font-weight:700;font-size:0.85rem;margin-bottom:6px">&#x1F3E0; Local-first</div><div style="font-size:0.78rem;color:var(--muted)">Your key never leaves your device. Zero-knowledge by design.</div></div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px"><div style="font-weight:700;font-size:0.85rem;margin-bottom:6px">&#x1F517; Blockchain anchoring</div><div style="font-size:0.78rem;color:var(--muted)">Vault fingerprint committed to Polygon. Tamper-proof audit trail.</div></div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px"><div style="font-weight:700;font-size:0.85rem;margin-bottom:6px">&#x26A0;&#xFE0F; Passphrase warning</div><div style="font-size:0.78rem;color:var(--muted)">If you lose your passphrase, your data is unrecoverable. Store it safely.</div></div>
+    </div>
+  </div>
 </section>
 
 <!-- Footer -->
