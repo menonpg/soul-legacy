@@ -46,7 +46,6 @@ def verify_token(authorization: str = Header(default="")):
 # ── Local: passphrase ─────────────────────────────────────────────────────────
 
 def verify_passphrase(vault_dir: str, passphrase: str) -> bool:
-    from ..vault import Vault
     try:
         v = Vault(vault_dir, passphrase)
         return v.verify_passphrase()
@@ -104,7 +103,6 @@ def create_cloud_account(email: str, password: str, name: str = "") -> dict:
     os.makedirs(vault_dir, exist_ok=True)
 
     vault_pass = secrets.token_hex(16)
-    from ..vault import Vault
     v = Vault(vault_dir, vault_pass)
     v.init(name or email, email)
 
@@ -151,7 +149,6 @@ def verify_cloud_login(email: str, password: str) -> Optional[dict]:
 
 def get_vault_for_token(token_data: dict):
     """Get an unlocked Vault from token payload"""
-    from ..vault import Vault
     vault_dir = token_data.get("vault_dir", "")
     if token_data.get("mode") == "cloud":
         # Read managed passphrase
