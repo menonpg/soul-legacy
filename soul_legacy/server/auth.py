@@ -105,19 +105,8 @@ def _hash_pw(password: str) -> str:
 
 
 def create_cloud_account(email: str, password: str, name: str = "") -> dict:
-    conn, db_type = _get_db()
     user_id   = secrets.token_hex(8)
-    vault_dir = f"/data/vaults/{user_id}"  # persistent path on Railway volume
-    os.makedirs(vault_dir, exist_ok=True)
-
-    vault_pass = secrets.token_hex(16)
-    v = Vault(vault_dir, vault_pass)
-    v.init(name or email, email)
-
-    vp_path = Path(vault_dir) / ".vp"
-    vp_path.write_text(vault_pass)
-    vp_path.chmod(0o600)
-
+    vault_dir = f"/data/vaults/{user_id}"
     now = datetime.now().isoformat()
     record = {"id": user_id, "email": email, "pw_hash": _hash_pw(password),
               "name": name, "vault_dir": vault_dir, "created_at": now}
