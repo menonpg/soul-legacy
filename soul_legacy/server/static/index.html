@@ -212,8 +212,9 @@
     <div class="auth-logo">🏛️</div>
     <h1>Soul Legacy</h1>
     <p>Your digital estate vault</p>
-    <div id="auth-help-cloud" style="font-size:0.78rem;color:#888899;margin-bottom:12px;text-align:left;background:#1a1a26;border-radius:8px;padding:10px 12px;line-height:1.6">Sign in or create a free account to access your cloud vault. Your data is encrypted — we can't read it.</div>
-    <div id="auth-help-local" style="display:none;font-size:0.78rem;color:#888899;margin-bottom:12px;text-align:left;background:#1a1a26;border-radius:8px;padding:10px 12px;line-height:1.6">Local mode requires <code style="background:#2a2a3a;padding:1px 5px;border-radius:3px">soul-legacy serve</code> running on your machine.<br>Your passphrase is set when you run <code style="background:#2a2a3a;padding:1px 5px;border-radius:3px">soul-legacy init</code>. This cloud app cannot access a local vault.</div>
+    <!-- auth-help-cloud removed — now inline --
+    <div id="auth-help-cloud" style="display:none" style="font-size:0.78rem;color:#888899;margin-bottom:12px;text-align:left;background:#1a1a26;border-radius:8px;padding:10px 12px;line-height:1.6">Sign in or create a free account to access your cloud vault. Your data is encrypted — we can't read it.</div>
+    <div id="auth-help-local" style="display:none" style="display:none;font-size:0.78rem;color:#888899;margin-bottom:12px;text-align:left;background:#1a1a26;border-radius:8px;padding:10px 12px;line-height:1.6">Local mode requires <code style="background:#2a2a3a;padding:1px 5px;border-radius:3px">soul-legacy serve</code> running on your machine.<br>Your passphrase is set when you run <code style="background:#2a2a3a;padding:1px 5px;border-radius:3px">soul-legacy init</code>. This cloud app cannot access a local vault.</div>
     <div class="auth-tabs">
       <button class="auth-tab" onclick="setAuthMode('local')">Local Vault</button>
       <button class="auth-tab active" onclick="setAuthMode('cloud')">Cloud Account</button>
@@ -431,6 +432,38 @@ async function apiFetch(path, method='GET', body=null, auth=true) {
     method, headers, body: body ? JSON.stringify(body) : null
   });
   return r.json();
+}
+
+// ── Mode detection ───────────────────────────────────────────────────────────
+
+async function detectMode() {
+  try {
+    const r = await fetch('/api/mode');
+    const d = await r.json();
+    return d.mode || 'local';
+  } catch { return 'local'; }
+}
+
+async function initAuthScreen() {
+  const mode = await detectMode();
+  document.getElementById('auth-loading').style.display = 'none';
+
+  if (mode === 'cloud') {
+    // Cloud deployment — show cloud form only, no tabs
+    document.getElementById('cloud-form').style.display = 'block';
+    document.getElementById('auth-subtitle').textContent = 'Sign in to your encrypted vault';
+    AUTH_MODE = 'cloud';
+  } else {
+    // Local deployment — show local form only, no tabs
+    document.getElementById('local-form').style.display = 'block';
+    document.getElementById('auth-subtitle').textContent = 'Unlock your local vault';
+    AUTH_MODE = 'local';
+  }
+}
+
+function toggleVaultPath() {
+  const el = document.getElementById('local-dir');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
