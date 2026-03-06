@@ -44,6 +44,20 @@ async def startup_log():
         logging.error(f"DB init error: {e}")
 
 
+@app.get("/api/authsrc")
+async def auth_src():
+    """Show what auth.py is actually on disk"""
+    import inspect
+    try:
+        from soul_legacy.server import auth as auth_mod
+        src = inspect.getsource(auth_mod)
+        return {"has_use_supabase": "_use_supabase" in src,
+                "has_supabase_url": "SUPABASE_URL" in src,
+                "file": getattr(auth_mod, "__file__", "unknown"),
+                "first_300": src[:300]}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/debug")
 async def debug_info():
     import traceback
