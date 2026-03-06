@@ -437,11 +437,13 @@
   <div class="section-label">Early Access</div>
   <h2>Be the first to secure your legacy</h2>
   <p>Soul Legacy is in private beta. Join the waitlist for early access and founding member pricing.</p>
-  <form class="waitlist-form" onsubmit="handleWaitlist(event)">
-    <input type="text" id="wl-name" placeholder="Your name" required />
-    <input type="email" id="wl-email" placeholder="your@email.com" required />
-    <button type="submit" class="btn-primary">Reserve My Spot</button>
+  <form class="waitlist-form" id="signup-form" onsubmit="handleSignup(event)" style="flex-direction:column;align-items:center;max-width:340px;margin:16px auto 0">
+    <input type="text" id="wl-name" placeholder="Your name" required style="width:100%" />
+    <input type="email" id="wl-email" placeholder="your@email.com" required style="width:100%" />
+    <input type="password" id="wl-password" placeholder="Choose a password (8+ chars)" minlength="8" required style="width:100%" />
+    <button type="submit" class="btn-primary" id="signup-btn" style="width:100%;margin-top:4px">Create Account →</button>
   </form>
+  <p id="wl-error" style="display:none;margin-top:12px;color:var(--red);font-size:0.9rem"></p>
 
   <!-- Success state — shown after signup -->
   <div class="wl-success" id="wl-success" style="display:none">
@@ -572,44 +574,39 @@
   .wl-warn { font-size: 0.75rem; color: #888899; margin-top: 10px; }
 </style>
 <script>
-function handleWaitlist(e) {
+async function handleSignup(e) {
   e.preventDefault();
-  const btn   = e.submitter || document.querySelector('.waitlist-form button[type=submit]');
-  const name  = document.getElementById('wl-name').value;
-  const email = document.getElementById('wl-email').value;
-  if (btn) { btn.disabled = true; btn.textContent = 'Joining…'; }
+  const name     = document.getElementById('wl-name').value;
+  const email    = document.getElementById('wl-email').value;
+  const password = document.getElementById('wl-password').value;
+  const btn      = document.getElementById('signup-btn');
+  const errEl    = document.getElementById('wl-error');
 
-  fetch('https://soulmate-api-production.up.railway.app/v1/signup', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, tier: 'waitlist_legacy', source: 'soul-legacy-waitlist' })
-  })
-  .then(r => r.ok ? r.json() : Promise.reject(r))
-  .then(data => showSuccess(name, data.api_key))
-  .catch(() => showSuccess(name, null));
-}
+  btn.disabled = true;
+  btn.textContent = 'Creating account…';
+  errEl.style.display = 'none';
 
-function showSuccess(name, apiKey) {
-  document.querySelector('.waitlist-form').style.display = 'none';
-  const box = document.getElementById('wl-success');
-  box.style.display = 'block';
-
-  document.getElementById('wl-greeting').textContent =
-    "You're in" + (name ? ', ' + name.split(' ')[0] : '') + '! 🎉';
-
-  if (apiKey) {
-    document.getElementById('wl-key-section').style.display = 'block';
-    document.getElementById('wl-key-display').textContent = apiKey;
+  try {
+    const res = await fetch('https://app.legacy.thinkcreateai.com/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, source: 'soul-legacy-landing' })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || 'Signup failed — please try again');
+    }
+    // Success
+    document.getElementById('signup-form').style.display = 'none';
+    if (errEl) errEl.style.display = 'none';
+    document.getElementById('wl-success').style.display = 'block';
+    document.getElementById('wl-greeting').textContent = '✅ Welcome, ' + name + '! Your account is ready.';
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Create Account →';
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
   }
-}
-
-function copyKey() {
-  const key = document.getElementById('wl-key-display').textContent;
-  navigator.clipboard.writeText(key).then(() => {
-    const btn = document.getElementById('wl-copy-btn');
-    btn.textContent = '✓ Copied';
-    setTimeout(() => btn.textContent = 'Copy', 2000);
-  });
 }
 </script>
 
