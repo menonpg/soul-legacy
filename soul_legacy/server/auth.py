@@ -62,18 +62,16 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 
 def _get_db():
-    """Returns a DB connection — Postgres if DATABASE_URL set, SQLite otherwise."""
-    if DATABASE_URL:
-        import psycopg2
+    """Returns (conn, db_type). Uses Postgres if DATABASE_URL+psycopg2 available, else SQLite."""
+    if DATABASE_URL and psycopg2 is not None:
         conn = psycopg2.connect(DATABASE_URL)
-        conn.autocommit = False
         cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS soul_legacy_accounts (
                 id         TEXT PRIMARY KEY,
                 email      TEXT UNIQUE NOT NULL,
                 pw_hash    TEXT NOT NULL,
-                name       TEXT DEFAULT '',
+                name       TEXT DEFAULT \'\',
                 vault_dir  TEXT,
                 created_at TEXT
             )
