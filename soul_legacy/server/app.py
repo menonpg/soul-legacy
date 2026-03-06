@@ -26,6 +26,14 @@ if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
+
+
+@app.get("/api/mode")
+def get_mode():
+    """Tell the UI whether we're running in local or cloud mode."""
+    mode = os.environ.get("SOUL_LEGACY_MODE", "local")
+    return {"mode": mode}
+
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 from .auth import verify_token, create_token, verify_passphrase
