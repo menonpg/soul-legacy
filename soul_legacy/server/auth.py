@@ -2,6 +2,10 @@
 Auth layer — works in both local (passphrase) and cloud (JWT + accounts) modes.
 """
 import os, json, hashlib, secrets, sqlite3
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -50,21 +54,45 @@ def verify_passphrase(vault_dir: str, passphrase: str) -> bool:
         return False
 
 
-# ── Cloud: account DB (SQLite locally, Postgres via env on Railway) ───────────
+# ── Cloud: account DB ────────────────────────────────────────────────────────
+# Uses Postgres (Supabase) when DATABASE_URL is set, SQLite otherwise.
+# Set DATABASE_URL=postgresql://... in Railway environment variables.
+
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+
 
 def _get_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("""CREATE TABLE IF NOT EXISTS accounts (
-        id         TEXT PRIMARY KEY,
-        email      TEXT UNIQUE,
-        pw_hash    TEXT,
-        name       TEXT,
-        vault_dir  TEXT,
-        created_at TEXT
-    )""")
-    conn.commit()
-    return conn
+    """Returns a DB connection — Postgres if DATABASE_URL set, SQLite otherwise."""
+    if DATABASE_URL:
+        import psycopg2
+        conn = psycopg2.connect(DATABASE_URL)
+        conn.autocommit = False
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS soul_legacy_accounts (
+                id         TEXT PRIMARY KEY,
+                email      TEXT UNIQUE NOT NULL,
+                pw_hash    TEXT NOT NULL,
+                name       TEXT DEFAULT '',
+                vault_dir  TEXT,
+                created_at TEXT
+            )
+        """)
+        conn.commit()
+        return conn, "postgres"
+    else:
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""CREATE TABLE IF NOT EXISTS soul_legacy_accounts (
+            id         TEXT PRIMARY KEY,
+            email      TEXT UNIQUE,
+            pw_hash    TEXT,
+            name       TEXT,
+            vault_dir  TEXT,
+            created_at TEXT
+        )""")
+        conn.commit()
+        return conn, "sqlite"
 
 
 def _hash_pw(password: str) -> str:
@@ -72,33 +100,52 @@ def _hash_pw(password: str) -> str:
 
 
 def create_cloud_account(email: str, password: str, name: str = "") -> dict:
-    db        = _get_db()
+    conn, db_type = _get_db()
     user_id   = secrets.token_hex(8)
-    vault_dir = os.path.expanduser(f"~/.soul-legacy/vaults/{user_id}")
+    vault_dir = f"/data/vaults/{user_id}"  # persistent path on Railway volume
     os.makedirs(vault_dir, exist_ok=True)
 
-    # Init vault with a random passphrase (stored hashed, managed by server)
     vault_pass = secrets.token_hex(16)
     from ..vault import Vault
     v = Vault(vault_dir, vault_pass)
     v.init(name or email, email)
 
-    # Store vault passphrase encrypted (simple for now — improve with KMS)
     vp_path = Path(vault_dir) / ".vp"
     vp_path.write_text(vault_pass)
     vp_path.chmod(0o600)
 
-    db.execute("INSERT INTO accounts VALUES (?,?,?,?,?,?)",
-               (user_id, email, _hash_pw(password), name, vault_dir,
-                datetime.now().isoformat()))
-    db.commit()
+    now = datetime.now().isoformat()
+    if db_type == "postgres":
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO soul_legacy_accounts VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (email) DO NOTHING",
+            (user_id, email, _hash_pw(password), name, vault_dir, now)
+        )
+        conn.commit()
+        conn.close()
+    else:
+        conn.execute("INSERT OR IGNORE INTO soul_legacy_accounts VALUES (?,?,?,?,?,?)",
+                     (user_id, email, _hash_pw(password), name, vault_dir, now))
+        conn.commit()
+
     return {"id": user_id, "email": email, "vault_dir": vault_dir, "name": name}
 
 
 def verify_cloud_login(email: str, password: str) -> Optional[dict]:
-    db  = _get_db()
-    row = db.execute("SELECT id,email,name,vault_dir FROM accounts WHERE email=? AND pw_hash=?",
-                     (email, _hash_pw(password))).fetchone()
+    conn, db_type = _get_db()
+    if db_type == "postgres":
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id,email,name,vault_dir FROM soul_legacy_accounts WHERE email=%s AND pw_hash=%s",
+            (email, _hash_pw(password))
+        )
+        row = cur.fetchone()
+        conn.close()
+    else:
+        row = conn.execute(
+            "SELECT id,email,name,vault_dir FROM soul_legacy_accounts WHERE email=? AND pw_hash=?",
+            (email, _hash_pw(password))
+        ).fetchone()
     if not row:
         return None
     return {"id": row[0], "email": row[1], "name": row[2], "vault_dir": row[3]}
