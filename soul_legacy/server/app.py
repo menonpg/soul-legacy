@@ -46,22 +46,25 @@ async def startup_log():
 
 @app.get("/api/debug")
 async def debug_info():
-    import sys, traceback
+    import traceback
     results = {}
     try:
         import psycopg2
         results["psycopg2"] = "ok"
     except Exception as e:
         results["psycopg2"] = str(e)
-    try:
-        from soul_legacy.server.auth import _get_db
-        conn, db_type = _get_db()
-        results["db"] = db_type
-        conn.close()
-    except Exception as e:
-        results["db"] = traceback.format_exc()[-300:]
     results["DATABASE_URL_set"] = bool(os.environ.get("DATABASE_URL"))
+    results["SUPABASE_URL_set"] = bool(os.environ.get("SUPABASE_URL"))
+    results["SUPABASE_KEY_set"] = bool(os.environ.get("SUPABASE_KEY"))
     results["MODE"] = os.environ.get("SOUL_LEGACY_MODE", "not set")
+    # Try actual signup flow
+    try:
+        from .auth import create_cloud_account, _use_supabase
+        results["use_supabase"] = _use_supabase()
+        u = create_cloud_account("debug_probe@probe.invalid", "probe123", "debug")
+        results["signup_test"] = "ok: " + u["id"]
+    except Exception as e:
+        results["signup_test"] = traceback.format_exc()[-400:]
     return results
 
 @app.get("/api/mode")
