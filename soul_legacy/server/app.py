@@ -51,10 +51,12 @@ async def auth_src():
     try:
         from soul_legacy.server import auth as auth_mod
         src = inspect.getsource(auth_mod)
+        idx = src.find("_use_supabase")
         return {"has_use_supabase": "_use_supabase" in src,
                 "has_supabase_url": "SUPABASE_URL" in src,
                 "file": getattr(auth_mod, "__file__", "unknown"),
-                "first_300": src[:300]}
+                "around_use_supabase": src[max(0,idx-200):idx+300],
+                "cloud_db_section": src[src.find("Cloud: account"):src.find("Cloud: account")+600] if "Cloud: account" in src else "not found"}
     except Exception as e:
         return {"error": str(e)}
 
