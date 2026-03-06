@@ -47,9 +47,10 @@ def verify_token(authorization: str = Header(default="")):
 
 def verify_passphrase(vault_dir: str, passphrase: str) -> bool:
     try:
+        from ..vault import Vault
         v = Vault(vault_dir, passphrase)
         return v.verify_passphrase()
-    except:
+    except Exception:
         return False
 
 
