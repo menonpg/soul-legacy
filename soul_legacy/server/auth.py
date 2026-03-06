@@ -59,12 +59,19 @@ def verify_passphrase(vault_dir: str, passphrase: str) -> bool:
 # Set DATABASE_URL=postgresql://... in Railway environment variables.
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
+DATABASE_URL_DIRECT = os.environ.get("DATABASE_URL_DIRECT", "")  # fallback direct connection
 
 
 def _get_db():
     """Returns (conn, db_type). Uses Postgres if DATABASE_URL+psycopg2 available, else SQLite."""
     if DATABASE_URL and psycopg2 is not None:
-        conn = psycopg2.connect(DATABASE_URL)
+        try:
+            conn = psycopg2.connect(DATABASE_URL, connect_timeout=8)
+        except Exception:
+            if DATABASE_URL_DIRECT:
+                conn = psycopg2.connect(DATABASE_URL_DIRECT, connect_timeout=8)
+            else:
+                raise
         cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS soul_legacy_accounts (
