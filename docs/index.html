@@ -524,26 +524,72 @@
   <div class="copy">© 2026 ThinkCreate.AI · BSL 1.1 → MIT 2030</div>
 </footer>
 
+<style>
+  .wl-success { display:none; text-align:center; }
+  .wl-api-key-box {
+    background: #12121a; border: 1px solid #2a2a3a; border-radius: 10px;
+    padding: 20px 24px; margin: 20px auto; max-width: 520px; text-align: left;
+  }
+  .wl-api-key-box .lbl { font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: .08em; color: #888899; margin-bottom: 8px; }
+  .wl-key-row { display: flex; align-items: center; gap: 10px; }
+  .wl-key-val {
+    flex: 1; background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 6px;
+    padding: 8px 12px; font-family: monospace; font-size: 0.82rem;
+    color: #a78bfa; word-break: break-all;
+  }
+  .wl-copy-btn {
+    background: #2a2a3a; border: none; border-radius: 6px; color: #e8e8f0;
+    padding: 8px 14px; font-size: 0.8rem; cursor: pointer; white-space: nowrap;
+  }
+  .wl-copy-btn:hover { background: #3a3a4a; }
+  .wl-app-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #7c6ef0; color: #fff; border: none; border-radius: 10px;
+    padding: 14px 28px; font-size: 1rem; font-weight: 700; cursor: pointer;
+    text-decoration: none; margin-top: 20px; transition: opacity .15s;
+  }
+  .wl-app-btn:hover { opacity: .88; }
+  .wl-warn { font-size: 0.75rem; color: #888899; margin-top: 10px; }
+</style>
 <script>
 function handleWaitlist(e) {
   e.preventDefault();
+  const btn   = e.submitter || document.querySelector('.waitlist-form button[type=submit]');
   const name  = document.getElementById('wl-name').value;
   const email = document.getElementById('wl-email').value;
+  if (btn) { btn.disabled = true; btn.textContent = 'Joining…'; }
 
-  // POST to soulmate-api signup endpoint
   fetch('https://soulmate-api-production.up.railway.app/v1/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, tier: 'waitlist_legacy' })
   })
-  .then(() => {
-    document.querySelector('.waitlist-form').style.display = 'none';
-    document.getElementById('wl-thanks').style.display = 'block';
-  })
-  .catch(() => {
-    // Show thanks anyway — log failure silently
-    document.querySelector('.waitlist-form').style.display = 'none';
-    document.getElementById('wl-thanks').style.display = 'block';
+  .then(r => r.ok ? r.json() : Promise.reject(r))
+  .then(data => showSuccess(name, data.api_key))
+  .catch(() => showSuccess(name, null));
+}
+
+function showSuccess(name, apiKey) {
+  document.querySelector('.waitlist-form').style.display = 'none';
+  const box = document.getElementById('wl-success');
+  box.style.display = 'block';
+
+  document.getElementById('wl-greeting').textContent =
+    "You're in" + (name ? ', ' + name.split(' ')[0] : '') + '! 🎉';
+
+  if (apiKey) {
+    document.getElementById('wl-key-section').style.display = 'block';
+    document.getElementById('wl-key-display').textContent = apiKey;
+  }
+}
+
+function copyKey() {
+  const key = document.getElementById('wl-key-display').textContent;
+  navigator.clipboard.writeText(key).then(() => {
+    const btn = document.getElementById('wl-copy-btn');
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
   });
 }
 </script>
