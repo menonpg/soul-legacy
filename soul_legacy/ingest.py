@@ -49,17 +49,26 @@ def auto_detect_section(text: str) -> str:
 
 
 def chunk_text(text: str, chunk_size: int = 500,
-               overlap: int = 50) -> List[str]:
-    """Split text into overlapping chunks by approximate token count"""
-    # Simple word-based chunking (1 token ≈ 0.75 words)
+               overlap: int = 50, min_chunk_len: int = 30) -> List[str]:
+    """
+    Split text into overlapping chunks by approximate token count.
+    
+    Matches textsentry/soul.py chunking conventions:
+    - Overlapping chunks for context continuity
+    - Skip tiny fragments (< min_chunk_len chars)
+    - 1 token ≈ 0.75 words
+    """
     words    = text.split()
     n_words  = int(chunk_size * 0.75)
     step     = n_words - int(overlap * 0.75)
     chunks   = []
+    
     for i in range(0, len(words), step):
-        chunk = " ".join(words[i:i + n_words])
-        if chunk.strip():
-            chunks.append(chunk.strip())
+        chunk = " ".join(words[i:i + n_words]).strip()
+        # Skip tiny fragments (textsentry learning)
+        if len(chunk) >= min_chunk_len:
+            chunks.append(chunk)
+    
     return chunks
 
 

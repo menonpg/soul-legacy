@@ -224,13 +224,16 @@ def delete(section, record_id):
 
 @main.command()
 @click.option("--api-key", envvar="ANTHROPIC_API_KEY")
-@click.option("--model", default="claude-haiku-4-5")
-def chat(api_key, model):
-    """Chat with your estate data in plain English"""
+@click.option("--model", default="claude-sonnet-4-20250514")
+@click.option("--mode", type=click.Choice(["auto", "rag", "rlm"]), default="auto",
+              help="Force RAG or RLM mode, or auto-detect (default)")
+def chat(api_key, model, mode):
+    """Chat with your estate data in plain English (RAG+RLM auto-routing)"""
     v = get_vault()
     console.print(Panel.fit(
         "[bold cyan]🏛️  Estate Advisor[/bold cyan]\n"
-        "[dim]Ask anything about your estate. Type 'exit' to quit.[/dim]",
+        "[dim]Ask anything about your estate. Type 'exit' to quit.[/dim]\n"
+        f"[dim]Mode: {mode} | Model: {model}[/dim]",
         border_style="cyan"
     ))
 
@@ -241,8 +244,19 @@ def chat(api_key, model):
         if q.lower() in ("exit", "quit", "q"):
             break
         with console.status("Thinking..."):
-            answer = do_chat(v, q, api_key=api_key, model=model)
-        console.print(f"\n[bold]Advisor:[/bold] {answer}")
+            result = do_chat(v, q, api_key=api_key, model=model, 
+                           config={"mode": mode})
+        
+        # Handle both dict (HybridAgent) and string (fallback) results
+        if isinstance(result, dict):
+            answer = result.get("answer", str(result))
+            route = result.get("route", "")
+            ms = result.get("total_ms", 0)
+            route_info = f" [dim][{route}][/dim]" if route else ""
+            time_info = f" [dim]({ms}ms)[/dim]" if ms else ""
+            console.print(f"\n[bold]Advisor{route_info}:[/bold] {answer}{time_info}")
+        else:
+            console.print(f"\n[bold]Advisor:[/bold] {result}")
 
 
 @main.command()

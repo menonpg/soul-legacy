@@ -1,3 +1,4 @@
 
 # Private roadmap (not for public repo)
 *.private.md
+.venv/
