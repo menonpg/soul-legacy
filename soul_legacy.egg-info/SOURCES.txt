@@ -29,6 +29,7 @@ soul_legacy/server/api/__init__.py
 soul_legacy/server/api/chat.py
 soul_legacy/server/api/deadmans.py
 soul_legacy/server/api/ingest.py
+soul_legacy/server/api/memorize.py
 soul_legacy/server/api/vault.py
 soul_legacy/storage/__init__.py
 soul_legacy/storage/github.py

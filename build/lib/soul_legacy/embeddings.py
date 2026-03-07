@@ -45,9 +45,9 @@ def _embed_local(texts: List[str]) -> List[List[float]]:
 def _embed_azure(texts: List[str], config: dict) -> List[List[float]]:
     """Azure OpenAI embeddings — zero local model footprint"""
     import requests
-    endpoint   = config.get("azure_endpoint") or os.getenv("AZURE_OPENAI_ENDPOINT") or os.getenv("AZURE_EMBEDDING_ENDPOINT", "")
-    api_key    = config.get("azure_key")      or os.getenv("AZURE_OPENAI_KEY") or os.getenv("AZURE_EMBEDDING_KEY", "")
-    deployment = config.get("azure_embed_deployment") or os.getenv("AZURE_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
+    endpoint   = config.get("azure_endpoint") or os.getenv("AZURE_OPENAI_ENDPOINT", "")
+    api_key    = config.get("azure_key")      or os.getenv("AZURE_OPENAI_KEY", "")
+    deployment = config.get("azure_embed_deployment", "text-embedding-ada-002")
     api_ver    = "2024-02-01"
 
     url  = f"{endpoint}/openai/deployments/{deployment}/embeddings?api-version={api_ver}"
