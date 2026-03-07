@@ -120,6 +120,31 @@ class LocalVectorStore:
     def count(self) -> int:
         return self._conn_().execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
 
+    def all_chunks(self) -> List[Dict]:
+        """
+        Return ALL chunks (decrypted) for RLM memory priming.
+        
+        TextSentry pattern: RLM reads from MEMORY.md, not vector DB.
+        This method extracts everything so we can write it to MEMORY.md.
+        """
+        conn = self._conn_()
+        rows = conn.execute(
+            "SELECT doc_id, section, text_enc, metadata FROM chunks ORDER BY doc_id, chunk_idx"
+        ).fetchall()
+        
+        results = []
+        for doc_id, section, text_enc, meta in rows:
+            text = decrypt(text_enc, self.passphrase, self.salt)
+            metadata = json.loads(meta) if meta else {}
+            results.append({
+                "doc_id": doc_id,
+                "section": section,
+                "text": text,
+                "filename": metadata.get("filename", doc_id.split("_")[0] if doc_id else "unknown"),
+                "metadata": metadata,
+            })
+        return results
+
 
 class QdrantVectorStore:
     """Qdrant cloud backend — for managed tier"""
@@ -184,6 +209,47 @@ class QdrantVectorStore:
                 "score":   hit["score"],
                 "metadata": p
             })
+        return results
+
+    def all_chunks(self, limit: int = 500) -> List[Dict]:
+        """
+        Return ALL chunks for RLM memory priming.
+        Uses scroll API to fetch all points from Qdrant.
+        """
+        import requests
+        results = []
+        offset = None
+        
+        while True:
+            payload = {
+                "limit": min(100, limit - len(results)),
+                "with_payload": True,
+                "with_vector": False,
+            }
+            if offset:
+                payload["offset"] = offset
+            
+            r = requests.post(
+                f"{self.url}/collections/{self.collection}/points/scroll",
+                headers=self._headers(), json=payload, timeout=30
+            )
+            data = r.json().get("result", {})
+            points = data.get("points", [])
+            
+            for pt in points:
+                p = pt.get("payload", {})
+                results.append({
+                    "doc_id": p.get("doc_id"),
+                    "section": p.get("section"),
+                    "text": p.get("chunk", ""),
+                    "filename": p.get("filename", "unknown"),
+                    "metadata": p,
+                })
+            
+            offset = data.get("next_page_offset")
+            if not offset or len(results) >= limit:
+                break
+        
         return results
 
 

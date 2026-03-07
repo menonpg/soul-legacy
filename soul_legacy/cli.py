@@ -490,3 +490,40 @@ def serve(host, port, cloud, reload):
     console.print(f"[bold]Open:[/bold] http://{host}:{port}\n")
     uvicorn.run("soul_legacy.server.app:app",
                 host=host, port=port, reload=reload)
+
+
+@main.command()
+@click.option("--verbose", "-v", is_flag=True, help="Show progress details")
+def memorize(verbose):
+    """
+    Prime MEMORY.md with ALL document chunks for RLM.
+    
+    TextSentry pattern: RLM reads MEMORY.md (local file), not vector DB.
+    Run this after bulk document ingestion so the advisor can do
+    exhaustive synthesis across your entire estate.
+    
+    Example:
+        soul-legacy memorize
+    """
+    v = get_vault()
+    console.print("[cyan]📝 Priming MEMORY.md for RLM exhaustive synthesis...[/cyan]")
+    console.print("[dim]This writes ALL document chunks to memory so the advisor[/dim]")
+    console.print("[dim]can synthesize across everything, not just search results.[/dim]\n")
+    
+    from .soul_integration import memorize_all
+    result = memorize_all(v, verbose=verbose)
+    
+    console.print()
+    table = Table(title="Memory Primed", show_header=False, border_style="green")
+    table.add_column("Metric", style="dim")
+    table.add_column("Value", style="bold")
+    table.add_row("Document chunks", str(result["chunks_memorized"]))
+    table.add_row("Vault records", str(result["records_memorized"]))
+    table.add_row("Sections", ", ".join(result["sections"]))
+    table.add_row("Memory size", f"{result['memory_size_kb']} KB")
+    console.print(table)
+    console.print()
+    console.print("[green]✅ RLM ready! Ask exhaustive questions like:[/green]")
+    console.print("   [dim]\"Summarize everything needed to settle this estate\"[/dim]")
+    console.print("   [dim]\"What documents are missing?\"[/dim]")
+    console.print("   [dim]\"List all accounts and beneficiaries\"[/dim]")

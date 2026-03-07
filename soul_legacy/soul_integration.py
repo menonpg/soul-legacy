@@ -214,3 +214,113 @@ class SoulLegacyAgent:
                 "RLM": sum(1 for i in self._interactions if i.get("route") == "RLM"),
             }
         }
+
+
+def memorize_all(vault: Vault, verbose: bool = True) -> dict:
+    """
+    Prime MEMORY.md with ALL document chunks for true RLM exhaustive synthesis.
+    
+    TextSentry pattern: RLM reads from MEMORY.md (local file), not vector DB.
+    Without priming, RLM has nothing to synthesize from on first use.
+    
+    Call this:
+      - After bulk document ingestion
+      - When RLM returns "no memories found"
+      - Via CLI: soul-legacy memorize
+    
+    Returns:
+        dict with chunks_memorized, sections_found, etc.
+    """
+    from .vectorstore import get_vectorstore
+    
+    mem_path = Path(vault.dir) / "MEMORY.md"
+    
+    # Start fresh or append to existing
+    if not mem_path.exists():
+        lines = ["# Estate Vault Memory\n\n"]
+        lines.append("*Primed from ingested documents for RLM synthesis.*\n\n")
+    else:
+        # Read existing, we'll append
+        lines = [mem_path.read_text()]
+        lines.append("\n\n---\n\n*RLM Prime: Document chunks appended below.*\n\n")
+    
+    vs = get_vectorstore(vault.dir, vault.passphrase, vault.salt, {})
+    total_chunks = 0
+    sections_found = set()
+    
+    # Method 1: Read from vector store's stored chunks
+    try:
+        all_chunks = vs.all_chunks()  # We'll add this method
+        for chunk_data in all_chunks:
+            section = chunk_data.get("section", "unknown")
+            filename = chunk_data.get("filename", "document")
+            text = chunk_data.get("text", "")
+            
+            if not text.strip():
+                continue
+            
+            sections_found.add(section)
+            lines.append(f"## Document: {filename} ({section})\n{text}\n\n")
+            total_chunks += 1
+            
+            if verbose and total_chunks % 10 == 0:
+                print(f"  📝 Memorized {total_chunks} chunks...")
+                
+    except AttributeError:
+        # Fallback: scan vault files directory and re-extract
+        if verbose:
+            print("  ⚠️  Vector store doesn't support all_chunks(), scanning files...")
+        
+        for section in ["legal", "assets", "insurance", "debts", "contacts", "beneficiaries"]:
+            files_dir = Path(vault.dir) / section / "files"
+            if not files_dir.exists():
+                continue
+            
+            for file_path in files_dir.iterdir():
+                if file_path.is_file():
+                    try:
+                        from .ocr import extract_text
+                        from .ingest import chunk_text
+                        
+                        text, method = extract_text(str(file_path), {})
+                        chunks = chunk_text(text)
+                        
+                        sections_found.add(section)
+                        for chunk in chunks:
+                            lines.append(f"## Document: {file_path.name} ({section})\n{chunk}\n\n")
+                            total_chunks += 1
+                    except Exception as e:
+                        if verbose:
+                            print(f"  ⚠️  Skipped {file_path.name}: {e}")
+    
+    # Also add structured vault records
+    records = vault.all_records()
+    record_count = 0
+    for section, items in records.items():
+        if not items:
+            continue
+        sections_found.add(section)
+        lines.append(f"## Vault Records: {section.upper()}\n")
+        for item in items:
+            # Redact sensitive fields
+            safe = {k: v for k, v in item.items()
+                    if k not in ("account_number", "ssn", "password", "pin")}
+            lines.append(f"- {json.dumps(safe)}\n")
+            record_count += 1
+        lines.append("\n")
+    
+    # Write to MEMORY.md
+    mem_path.write_text("".join(lines))
+    
+    if verbose:
+        print(f"  ✅ Memorized {total_chunks} chunks + {record_count} records")
+        print(f"  📁 Sections: {', '.join(sorted(sections_found))}")
+        print(f"  💾 Written to: {mem_path}")
+    
+    return {
+        "chunks_memorized": total_chunks,
+        "records_memorized": record_count,
+        "sections": list(sections_found),
+        "memory_path": str(mem_path),
+        "memory_size_kb": round(mem_path.stat().st_size / 1024, 1),
+    }

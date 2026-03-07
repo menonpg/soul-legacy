@@ -74,7 +74,8 @@ def chunk_text(text: str, chunk_size: int = 500,
 
 def ingest_file(vault: Vault, file_path: str,
                 section: str = None, record_id: str = None,
-                config: dict = None, verbose: bool = True) -> dict:
+                config: dict = None, verbose: bool = True,
+                prime_memory: bool = True) -> dict:
     """
     Full ingestion pipeline for a single file.
     Returns summary dict with section, record_id, chunks, method.
@@ -138,6 +139,23 @@ def ingest_file(vault: Vault, file_path: str,
                     "section": section, "ocr_method": method}
     )
     if verbose: print(f"  🗃️  Indexed {len(chunks)} chunks in vector store")
+    
+    # Step 8: Prime MEMORY.md for RLM (TextSentry pattern)
+    # RLM reads from local files, not vector DB — needs chunks in MEMORY.md
+    if prime_memory:
+        from pathlib import Path
+        mem_path = Path(vault.dir) / "MEMORY.md"
+        if not mem_path.exists():
+            mem_path.write_text("# Estate Vault Memory\n\n")
+        
+        with open(mem_path, "a") as f:
+            f.write(f"\n## Document: {filename} ({section})\n")
+            # Write first few chunks (enough for RLM to have context)
+            for chunk in chunks[:5]:  # Limit to prevent massive files
+                f.write(f"{chunk}\n\n")
+        
+        if verbose: print(f"  📝 Primed MEMORY.md with {min(5, len(chunks))} chunks for RLM")
+    
     if verbose: print(f"  ✅ Done → {section}/{record_id}")
 
     return {
