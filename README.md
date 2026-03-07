@@ -1,5 +1,10 @@
 # 🏛️ soul-legacy
 
+[![PyPI version](https://img.shields.io/pypi/v/soul-legacy.svg)](https://pypi.org/project/soul-legacy/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/soul-legacy.svg)](https://pypi.org/project/soul-legacy/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Amazon Book](https://img.shields.io/badge/📚_Book-Amazon-FF9900?logo=amazon&logoColor=white)](https://a.co/d/02T0WadG)
+
 > *Your life, documented. Your wishes, honored.*
 
 **soul-legacy** is a local-first, encrypted digital estate vault with LLM chat. It's the estate and legacy module of the [soul.py](https://github.com/menonpg/soul.py) ecosystem.
